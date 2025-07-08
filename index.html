@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dubai360 Apresentação</title>
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; background: #333; }
+    #viewerContainer { height: 100vh; overflow: auto; }
+    canvas { display: block; margin: 0 auto; background: #fff; }
+  </style>
+</head>
+<body>
+
+<div id="viewerContainer"></div>
+
+<script src="pdfjs/pdf.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs/pdf.worker.js';
+
+  const url = 'dubai360.pdf';
+
+  const loadingTask = pdfjsLib.getDocument(url);
+  loadingTask.promise.then(pdf => {
+    console.log('PDF carregado: ' + pdf.numPages + ' páginas.');
+
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+      pdf.getPage(pageNumber).then(page => {
+        const scale = 1.2;
+        const viewport = page.getViewport({ scale: scale });
+
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport
+        };
+        page.render(renderContext);
+
+        document.getElementById('viewerContainer').appendChild(canvas);
+      });
+    }
+  }).catch(error => {
+    console.error('Erro ao carregar o PDF: ', error);
+    const msg = document.createElement('p');
+    msg.textContent = 'Não foi possível carregar o PDF.';
+    document.body.appendChild(msg);
+  });
+</script>
+
+</body>
+</html>
